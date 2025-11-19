@@ -4,13 +4,14 @@ A comprehensive full-stack web application built with Next.js featuring five dis
 
 ## 🎯 Project Overview
 
-This application demonstrates proficiency in modern web development by implementing multiple interactive features including todo management, photo uploads, review systems, and markdown notes - all with a clean, professional UI using Sta Clara International Corporation's brand colors.
+This application demonstrates proficiency in modern web development by implementing multiple interactive features including todo management, photo uploads, review systems, and markdown notes - all with a clean, professional UI using a modern green color palette.
 
 ## ✨ Features
 
 ### Activity 1: Todo List
 - ✅ Full CRUD operations (Create, Read, Update, Delete)
-- ✅ Toggle completion status with checkboxes
+- ✅ Toggle completion status with responsive checkboxes
+- ✅ Loading state indicators during updates
 - ✅ Inline editing functionality
 - ✅ Persistent data storage with Supabase
 - ✅ Real-time statistics (total, completed, pending)
@@ -24,33 +25,41 @@ This application demonstrates proficiency in modern web development by implement
 - 📊 Photo count and size tracking
 
 ### Activity 3: Food Review App
-- 🍕 Upload food photos with custom names
+- 🍕 Upload food photos with preview/submit flow
+- 👥 View ALL food photos from ALL users
 - ⭐ Star rating system (1-5 stars)
-- 💬 Write and manage reviews
+- 💬 Write and manage reviews on any food photo
+- 👤 Reviewer names displayed on all reviews
 - 🔄 Full CRUD on both photos and reviews
 - 📱 Dual-panel interface (photos + reviews)
+- 🔄 Sort by name or upload date
 
 ### Activity 4: Pokemon Review App
 - 🔍 Search Pokemon using PokeAPI
 - 📋 View Pokemon details (sprite, types)
 - ⭐ Rate and review Pokemon
+- 👤 Reviewer names displayed on all reviews
 - 📝 Track your reviewed Pokemon
 - 🔄 Sort reviews by name or date
 
 ### Activity 5: Markdown Notes App
 - 📝 Create and edit notes with Markdown support
 - 👁️ Toggle between raw markdown and preview
+- ✏️ View-only mode with dedicated edit button
 - 💾 Auto-save functionality
-- 📚 Notes list with timestamps
+- 📚 Notes list with timestamps and visual selection
 - 🎨 Rich markdown rendering with react-markdown
 
 ## 🔐 Authentication & Security
 
 - User authentication via Supabase Auth
+- User profiles with display names
+- Profile settings page for account management
 - Row-Level Security (RLS) policies
-- User-specific data isolation
+- User-specific data isolation for personal data
+- Shared viewing of community content (food photos, Pokemon reviews)
 - Protected routes and API endpoints
-- Account deletion functionality
+- Full account deletion (auth + database records) via secure API route
 
 ## 🛠️ Tech Stack
 
@@ -121,7 +130,10 @@ Create a `.env.local` file in the root directory:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ```
+
+**Note**: The `SUPABASE_SERVICE_ROLE_KEY` is required for account deletion functionality (used in API routes).
 
 4. **Set up Supabase Database**
 
@@ -143,6 +155,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🗄️ Database Schema
 
 ### Tables
+
+**profiles**
+```sql
+- id (uuid, primary key, foreign key → auth.users)
+- display_name (text)
+- email (text)
+- created_at (timestamp)
+- updated_at (timestamp)
+```
 
 **todos**
 ```sql
@@ -236,6 +257,9 @@ ivhan-multiple-activities-app/
 │   │   ├── activity-3/         # Food Review
 │   │   ├── activity-4/         # Pokemon Review
 │   │   ├── activity-5/         # Markdown Notes
+│   │   ├── profile/            # Profile settings page
+│   │   ├── api/
+│   │   │   └── delete-account/ # Account deletion API route
 │   │   ├── layout.tsx          # Root layout
 │   │   ├── page.tsx            # Home page
 │   │   └── globals.css         # Global styles
@@ -249,13 +273,18 @@ ivhan-multiple-activities-app/
 │   │   ├── use-photos.ts
 │   │   ├── use-food.ts
 │   │   ├── use-pokemon.ts
-│   │   └── use-notes.ts
+│   │   ├── use-notes.ts
+│   │   └── use-profiles.ts     # Profile data fetching
 │   ├── services/
 │   │   ├── todo.service.ts
 │   │   ├── photo.service.ts
 │   │   ├── food.service.ts
 │   │   ├── pokemon.service.ts
-│   │   └── note.service.ts
+│   │   ├── note.service.ts
+│   │   └── profile.service.ts  # Profile management
+│   ├── types/
+│   │   ├── database.types.ts
+│   │   └── profile.types.ts    # Profile type definitions
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   └── client.ts       # Supabase client
@@ -275,20 +304,33 @@ ivhan-multiple-activities-app/
 ### Real-time Updates
 - Automatic query invalidation and refetching after mutations
 - Optimistic UI updates for better UX
+- Instant feedback with loading states
+
+### User Experience
+- Modern modal dialogs for confirmations (delete, sign out)
+- Enhanced AlertDialog components with themed styling
+- Preview/submit flow for image uploads
+- Loading spinners during async operations
+- Toast notifications for all actions
 
 ### File Upload
 - Direct upload to Supabase Storage
+- Image preview before submission
 - Image optimization with Next.js Image component
 - File size tracking and display
+- Support for remote images (PokeAPI)
 
 ### Row-Level Security (RLS)
-- Users can only access their own data
+- User-specific data isolation (todos, photos, notes)
+- Shared community content (food photos, Pokemon reviews)
 - Secure API endpoints with Supabase RLS policies
+- Admin-level operations via service role key
 
 ### Responsive Design
 - Mobile-first approach
 - Adapts to all screen sizes
 - Touch-friendly interfaces
+- Dual-panel layouts on larger screens
 
 ## 👨‍💻 Developer
 
