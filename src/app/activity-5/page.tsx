@@ -310,7 +310,7 @@ export default function Activity5() {
 
                         {viewMode === "raw" ? (
                           <Textarea
-                            placeholder="Write your markdown content here...&#10;&#10;# Example Heading&#10;**Bold text**&#10;*Italic text*&#10;- List item&#10;[Link](https://example.com)"
+                            placeholder="Write here..."
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             className="min-h-[500px] font-mono"
