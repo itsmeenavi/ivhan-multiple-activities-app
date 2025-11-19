@@ -13,6 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ListTodo, Plus, Trash2, Edit2, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTodos } from "@/hooks/use-todos";
@@ -24,6 +34,7 @@ export default function Activity1() {
   const [newTodoTitle, setNewTodoTitle] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -94,13 +105,10 @@ export default function Activity1() {
   };
 
   const handleDelete = (todoId: string) => {
-    if (!confirm("Are you sure you want to delete this todo?")) {
-      return;
-    }
-
     deleteTodo(todoId, {
       onSuccess: () => {
         toast.success("Todo deleted!");
+        setDeleteDialogId(null);
       },
       onError: () => {
         toast.error("Failed to delete todo");
@@ -241,7 +249,7 @@ export default function Activity1() {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleDelete(todo.id)}
+                            onClick={() => setDeleteDialogId(todo.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -272,6 +280,26 @@ export default function Activity1() {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogId !== null} onOpenChange={(open) => !open && setDeleteDialogId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Todo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this todo? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteDialogId && handleDelete(deleteDialogId)}
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

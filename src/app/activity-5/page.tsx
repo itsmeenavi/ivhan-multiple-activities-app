@@ -14,6 +14,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   FileText,
   Plus,
   Trash2,
@@ -38,6 +48,7 @@ export default function Activity5() {
   const [content, setContent] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("raw");
   const [isEditing, setIsEditing] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{id: string; title: string} | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -107,20 +118,19 @@ export default function Activity5() {
     }
   };
 
-  const handleDelete = (noteId: string, noteTitle: string) => {
-    if (!confirm(`Delete note "${noteTitle}"?`)) {
-      return;
-    }
+  const handleDelete = () => {
+    if (!deleteDialog) return;
 
-    deleteNote(noteId, {
+    deleteNote(deleteDialog.id, {
       onSuccess: () => {
-        if (selectedNoteId === noteId) {
+        if (selectedNoteId === deleteDialog.id) {
           setSelectedNoteId(null);
           setTitle("");
           setContent("");
           setIsEditing(false);
         }
         toast.success("Note deleted!");
+        setDeleteDialog(null);
       },
       onError: () => {
         toast.error("Failed to delete note");
@@ -223,7 +233,7 @@ export default function Activity5() {
                             className="w-full"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelete(note.id, note.title);
+                              setDeleteDialog({ id: note.id, title: note.title });
                             }}
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
@@ -403,6 +413,26 @@ export default function Activity5() {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialog !== null} onOpenChange={(open) => !open && setDeleteDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Note?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteDialog?.title}&quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

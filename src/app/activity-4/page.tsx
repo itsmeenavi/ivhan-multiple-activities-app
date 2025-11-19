@@ -14,6 +14,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Sparkles,
   Search,
   Trash2,
@@ -375,6 +385,7 @@ function ReviewsPanel({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState("");
+  const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
 
   const handleCreate = () => {
     if (!comment.trim()) {
@@ -417,12 +428,13 @@ function ReviewsPanel({
     );
   };
 
-  const handleDelete = (reviewId: string) => {
-    if (!confirm("Delete this review?")) return;
+  const handleDelete = () => {
+    if (!deleteReviewId) return;
 
-    deleteReview(reviewId, {
+    deleteReview(deleteReviewId, {
       onSuccess: () => {
         toast.success("Review deleted!");
+        setDeleteReviewId(null);
       },
       onError: () => {
         toast.error("Failed to delete");
@@ -546,7 +558,7 @@ function ReviewsPanel({
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDelete(review.id)}
+                          onClick={() => setDeleteReviewId(review.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Delete
@@ -560,6 +572,26 @@ function ReviewsPanel({
           ))
         )}
       </div>
+
+      <AlertDialog open={deleteReviewId !== null} onOpenChange={(open) => !open && setDeleteReviewId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this review? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

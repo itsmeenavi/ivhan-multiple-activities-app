@@ -3,13 +3,25 @@
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { LogOut, Trash2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function NavBar() {
   const { user, signOut, deleteAccount } = useAuth();
   const router = useRouter();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -22,17 +34,10 @@ export function NavBar() {
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
     try {
       await deleteAccount();
       toast.success("Account deleted successfully");
+      setShowDeleteDialog(false);
       router.push("/");
     } catch (err: any) {
       toast.error(err.message || "Failed to delete account");
@@ -96,12 +101,33 @@ export function NavBar() {
               <LogOut className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Sign Out</span>
             </Button>
-            <Button onClick={handleDeleteAccount} variant="destructive" size="sm">
+            <Button onClick={() => setShowDeleteDialog(true)} variant="destructive" size="sm">
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete your account? This action cannot be undone.
+              All your data will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 }

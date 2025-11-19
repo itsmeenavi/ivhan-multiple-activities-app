@@ -13,6 +13,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Image as ImageIcon,
   Upload,
   Trash2,
@@ -38,6 +48,7 @@ export default function Activity2() {
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [deleteDialog, setDeleteDialog] = useState<{id: string; url: string; name: string} | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -96,16 +107,15 @@ export default function Activity2() {
     setEditingName("");
   };
 
-  const handleDelete = (photoId: string, photoUrl: string, photoName: string) => {
-    if (!confirm(`Are you sure you want to delete "${photoName}"?`)) {
-      return;
-    }
+  const handleDelete = () => {
+    if (!deleteDialog) return;
 
     deletePhoto(
-      { photoId, photoUrl },
+      { photoId: deleteDialog.id, photoUrl: deleteDialog.url },
       {
         onSuccess: () => {
           toast.success("Photo deleted!");
+          setDeleteDialog(null);
         },
         onError: () => {
           toast.error("Failed to delete photo");
@@ -330,7 +340,7 @@ export default function Activity2() {
                                 size="sm"
                                 variant="destructive"
                                 onClick={() =>
-                                  handleDelete(photo.id, photo.url, photo.name)
+                                  setDeleteDialog({ id: photo.id, url: photo.url, name: photo.name })
                                 }
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -361,6 +371,26 @@ export default function Activity2() {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialog !== null} onOpenChange={(open) => !open && setDeleteDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteDialog?.name}&quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
