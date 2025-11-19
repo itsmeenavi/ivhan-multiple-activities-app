@@ -32,6 +32,7 @@ import {
   Eye,
   Code,
   X,
+  Edit2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNotes } from "@/hooks/use-notes";
@@ -62,7 +63,7 @@ export default function Activity5() {
       if (note) {
         setTitle(note.title);
         setContent(note.content);
-        setIsEditing(true);
+        setIsEditing(false); // Changed: Don't auto-edit when selecting a note
       }
     }
   }, [selectedNoteId, notes]);
@@ -140,8 +141,8 @@ export default function Activity5() {
 
   const handleSelectNote = (noteId: string) => {
     setSelectedNoteId(noteId);
-    setIsEditing(false);
-    setViewMode("raw");
+    setIsEditing(false); // Always view mode when selecting
+    setViewMode("preview"); // Changed: Start with preview mode for better UX
   };
 
   const handleCancel = () => {
@@ -185,7 +186,7 @@ export default function Activity5() {
               Activity 5: Markdown Notes
             </h1>
             <p className="text-[hsl(var(--color-muted-foreground))]">
-              Create and manage notes with Markdown support
+              Create and manage notes
             </p>
           </div>
 
@@ -215,15 +216,19 @@ export default function Activity5() {
                     notes.map((note) => (
                       <Card
                         key={note.id}
-                        className={`cursor-pointer transition-all bg-white ${
+                        className={`cursor-pointer transition-all ${
                           selectedNoteId === note.id
-                            ? "border-[#347a24] border-2"
-                            : ""
+                            ? "border-[#347a24] border-4 bg-green-50 shadow-lg"
+                            : "bg-white hover:border-[#66a777] hover:shadow-md"
                         }`}
                         onClick={() => handleSelectNote(note.id)}
                       >
                         <CardContent className="p-3 space-y-2">
-                          <div className="font-semibold truncate">{note.title}</div>
+                          <div className={`font-semibold truncate ${
+                            selectedNoteId === note.id ? "text-[#347a24]" : ""
+                          }`}>
+                            {note.title}
+                          </div>
                           <div className="text-xs text-[hsl(var(--color-muted-foreground))]">
                             {new Date(note.updated_at || note.created_at).toLocaleDateString()}
                           </div>
@@ -260,15 +265,14 @@ export default function Activity5() {
                       : "View Note"}
                   </CardTitle>
                   {selectedNoteId && !isEditing && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsEditing(true)}
-                      >
-                        Edit
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                      className="bg-[#347a24] hover:bg-[#2d6a1f] text-white"
+                    >
+                      <Edit2 className="h-4 w-4 mr-1" />
+                      Edit Note
+                    </Button>
                   )}
                 </div>
               </CardHeader>
@@ -380,37 +384,6 @@ export default function Activity5() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Markdown Guide */}
-          <Card className="shadow-lg border">
-            <CardHeader>
-              <CardTitle className="text-lg">Markdown Quick Guide</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    # Heading
-                  </code>
-                </div>
-                <div>
-                  <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    **Bold**
-                  </code>
-                </div>
-                <div>
-                  <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    *Italic*
-                  </code>
-                </div>
-                <div>
-                  <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                    [Link](url)
-                  </code>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

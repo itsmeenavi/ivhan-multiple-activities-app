@@ -13,33 +13,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { LogOut, Trash2, Lock, Mail, KeyRound, Loader2, ListTodo, Image, UtensilsCrossed, Sparkles as SparklesIcon, FileText } from "lucide-react";
+import { Lock, Mail, KeyRound, Loader2, ListTodo, Image, UtensilsCrossed, Sparkles as SparklesIcon, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Home() {
-  const { user, loading, signIn, signUp, signOut, deleteAccount } = useAuth();
+  const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (!isLogin && !displayName.trim()) {
+      toast.error("Please enter your name");
       return;
     }
 
@@ -55,7 +50,7 @@ export default function Home() {
         await signIn(email, password);
         toast.success("Welcome back!");
       } else {
-        await signUp(email, password);
+        await signUp(email, password, displayName.trim());
         toast.success("Account created successfully!");
       }
     } catch (err: any) {
@@ -65,24 +60,6 @@ export default function Home() {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Signed out successfully");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to sign out");
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      await deleteAccount();
-      toast.success("Account deleted successfully");
-      setShowDeleteDialog(false);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete account");
-    }
-  };
 
   if (loading) {
     return (
@@ -165,42 +142,7 @@ export default function Home() {
               </Link>
             </div>
           </CardContent>
-          <CardFooter className="flex gap-2 justify-center pt-6">
-            <Button onClick={handleSignOut} variant="outline" size="lg">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="destructive"
-              size="lg"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Account
-            </Button>
-          </CardFooter>
         </Card>
-
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Account?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete your account? This action cannot be undone.
-                All your data will be permanently removed.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDeleteAccount}
-                className="bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-xl transition-all"
-              >
-                Delete Account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     );
   }
@@ -223,6 +165,23 @@ export default function Home() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-5">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="displayName" className="text-base font-semibold">
+                  Your Name
+                </Label>
+                <Input
+                  id="displayName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="h-12 text-base"
+                  required={!isLogin}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-base font-semibold">
                 Email Address
@@ -289,6 +248,7 @@ export default function Home() {
                   setIsLogin(!isLogin);
                   setEmail("");
                   setPassword("");
+                  setDisplayName("");
                 }}
                 className="text-[#347a24] font-semibold underline-offset-4 hover:underline hover:text-[#66a777]"
                 disabled={isSubmitting}
