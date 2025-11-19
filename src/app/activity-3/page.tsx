@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFoodPhotos, useFoodReviews } from "@/hooks/use-food";
+import { useProfiles } from "@/hooks/use-profiles";
 import Image from "next/image";
 
 type SortOption = "name-asc" | "name-desc" | "date-asc" | "date-desc";
@@ -53,6 +54,8 @@ export default function Activity3() {
   const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
   const [editingPhotoName, setEditingPhotoName] = useState("");
   const [deletePhotoDialog, setDeletePhotoDialog] = useState<{id: string; url: string; name: string} | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -60,12 +63,34 @@ export default function Activity3() {
     }
   }, [user, loading, router]);
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
+      return;
+    }
+
+    // Create preview URL
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setSelectedFile(file);
+    e.target.value = ""; // Reset input
+  };
+
+  const handleSubmitUpload = () => {
+    if (!selectedFile) {
+      toast.error("Please select an image");
       return;
     }
 
@@ -75,19 +100,33 @@ export default function Activity3() {
     }
 
     uploadFoodPhoto(
-      { file, name: uploadName },
+      { file: selectedFile, name: uploadName },
       {
         onSuccess: () => {
           toast.success("Food photo uploaded!");
           setUploadName("");
           setShowUploadForm(false);
-          e.target.value = "";
+          setSelectedFile(null);
+          if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+          }
         },
         onError: () => {
           toast.error("Failed to upload photo");
         },
       }
     );
+  };
+
+  const handleCancelUpload = () => {
+    setShowUploadForm(false);
+    setUploadName("");
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   const handleUpdatePhoto = (photoId: string) => {
@@ -208,17 +247,39 @@ export default function Activity3() {
                       value={uploadName}
                       onChange={(e) => setUploadName(e.target.value)}
                     />
-                    <Input type="file" accept="image/*" onChange={handleUpload} />
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowUploadForm(false);
-                        setUploadName("");
-                      }}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
+                    <Input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileSelect}
+                      id="food-file-input"
+                    />
+                    {previewUrl && (
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-[#66a777]">
+                        <Image
+                          src={previewUrl}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSubmitUpload}
+                        disabled={!selectedFile || !uploadName.trim()}
+                        className="flex-1"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Submit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelUpload}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 )}
 
@@ -319,31 +380,33 @@ export default function Activity3() {
                                 <div className="text-xs text-[hsl(var(--color-muted-foreground))]">
                                   {new Date(photo.created_at).toLocaleDateString()}
                                 </div>
-                                <div className="flex gap-1 mt-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-6 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingPhotoId(photo.id);
-                                      setEditingPhotoName(photo.name);
-                                    }}
-                                  >
-                                    <Edit2 className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    className="h-6 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDeletePhotoDialog({ id: photo.id, url: photo.url, name: photo.name });
-                                    }}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                                {photo.user_id === user.id && (
+                                  <div className="flex gap-1 mt-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-6 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingPhotoId(photo.id);
+                                        setEditingPhotoName(photo.name);
+                                      }}
+                                    >
+                                      <Edit2 className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="h-6 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeletePhotoDialog({ id: photo.id, url: photo.url, name: photo.name });
+                                      }}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                )}
                               </>
                             )}
                           </div>
@@ -422,6 +485,9 @@ function ReviewsPanel({
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState("");
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
+  
+  // Fetch profiles for all reviewers
+  const { profiles } = useProfiles(reviews.map(r => r.user_id));
 
   const handleCreate = () => {
     if (!comment.trim()) {
@@ -560,17 +626,22 @@ function ReviewsPanel({
                 ) : (
                   <>
                     <div className="flex justify-between items-start">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-5 w-5 ${
-                              star <= review.rating
-                                ? "fill-yellow-500 text-yellow-500"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
+                      <div>
+                        <div className="flex gap-1 mb-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-5 w-5 ${
+                                star <= review.rating
+                                  ? "fill-yellow-500 text-yellow-500"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs font-semibold text-[#347a24]">
+                          {profiles.find(p => p.id === review.user_id)?.display_name || "Anonymous"}
+                        </p>
                       </div>
                       <span className="text-xs text-[hsl(var(--color-muted-foreground))]">
                         {new Date(review.created_at).toLocaleDateString()}

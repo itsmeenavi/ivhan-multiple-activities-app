@@ -41,6 +41,7 @@ import {
   usePokemonReviews,
   useUserPokemonReviews,
 } from "@/hooks/use-pokemon";
+import { useProfiles } from "@/hooks/use-profiles";
 import Image from "next/image";
 import type { Pokemon } from "@/services/pokemon.service";
 
@@ -386,6 +387,9 @@ function ReviewsPanel({
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState("");
   const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
+  
+  // Fetch profiles for all reviewers
+  const { profiles } = useProfiles(reviews.map(r => r.user_id));
 
   const handleCreate = () => {
     if (!comment.trim()) {
@@ -524,17 +528,22 @@ function ReviewsPanel({
                 ) : (
                   <>
                     <div className="flex justify-between items-start">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-5 w-5 ${
-                              star <= review.rating
-                                ? "fill-yellow-500 text-yellow-500"
-                                : "text-gray-300"
-                            }`}
-                          />
-                        ))}
+                      <div>
+                        <div className="flex gap-1 mb-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-5 w-5 ${
+                                star <= review.rating
+                                  ? "fill-yellow-500 text-yellow-500"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs font-semibold text-[#347a24]">
+                          {profiles.find(p => p.id === review.user_id)?.display_name || "Anonymous"}
+                        </p>
                       </div>
                       <span className="text-xs text-[hsl(var(--color-muted-foreground))]">
                         {new Date(review.created_at).toLocaleDateString()}

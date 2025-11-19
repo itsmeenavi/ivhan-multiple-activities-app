@@ -7,8 +7,8 @@ export function useFoodPhotos() {
   const queryClient = useQueryClient();
 
   const { data: foodPhotos = [], isLoading } = useQuery({
-    queryKey: ["food-photos", user?.id],
-    queryFn: () => foodService.getFoodPhotos(user?.id || ""),
+    queryKey: ["food-photos"],
+    queryFn: () => foodService.getFoodPhotos(),
     enabled: !!user?.id,
   });
 
@@ -16,8 +16,8 @@ export function useFoodPhotos() {
     mutationFn: ({ file, name }: { file: File; name: string }) =>
       foodService.uploadFoodPhoto(user?.id || "", file, name),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["food-photos", user?.id] });
-      await queryClient.refetchQueries({ queryKey: ["food-photos", user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["food-photos"] });
+      await queryClient.refetchQueries({ queryKey: ["food-photos"] });
     },
   });
 
@@ -25,8 +25,8 @@ export function useFoodPhotos() {
     mutationFn: ({ photoId, name }: { photoId: string; name: string }) =>
       foodService.updateFoodPhoto(photoId, name),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["food-photos", user?.id] });
-      await queryClient.refetchQueries({ queryKey: ["food-photos", user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["food-photos"] });
+      await queryClient.refetchQueries({ queryKey: ["food-photos"] });
     },
   });
 
@@ -34,8 +34,8 @@ export function useFoodPhotos() {
     mutationFn: ({ photoId, photoUrl }: { photoId: string; photoUrl: string }) =>
       foodService.deleteFoodPhoto(photoId, photoUrl),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["food-photos", user?.id] });
-      await queryClient.refetchQueries({ queryKey: ["food-photos", user?.id] });
+      await queryClient.invalidateQueries({ queryKey: ["food-photos"] });
+      await queryClient.refetchQueries({ queryKey: ["food-photos"] });
     },
   });
 

@@ -20,8 +20,19 @@ export interface FoodReview {
 }
 
 export const foodService = {
-  // Get all food photos for a user
-  async getFoodPhotos(userId: string): Promise<FoodPhoto[]> {
+  // Get all food photos from all users
+  async getFoodPhotos(): Promise<FoodPhoto[]> {
+    const { data, error } = await supabase
+      .from("food_photos")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Get food photos for a specific user
+  async getUserFoodPhotos(userId: string): Promise<FoodPhoto[]> {
     const { data, error } = await supabase
       .from("food_photos")
       .select("*")

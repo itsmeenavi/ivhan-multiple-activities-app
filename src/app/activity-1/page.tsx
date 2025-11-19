@@ -35,6 +35,7 @@ export default function Activity1() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -60,14 +61,17 @@ export default function Activity1() {
   };
 
   const handleToggleComplete = (todoId: string, completed: boolean) => {
+    setUpdatingId(todoId);
     updateTodo(
       { todoId, updates: { completed: !completed } },
       {
         onSuccess: () => {
           toast.success(completed ? "Todo marked incomplete" : "Todo completed!");
+          setUpdatingId(null);
         },
         onError: () => {
           toast.error("Failed to update todo");
+          setUpdatingId(null);
         },
       }
     );
@@ -190,13 +194,17 @@ export default function Activity1() {
                         key={todo.id}
                         className="flex items-center gap-3 p-4 border-2 rounded-lg bg-white hover:border-[#66a777] transition-colors"
                       >
-                      <Checkbox
-                        checked={todo.completed}
-                        onCheckedChange={() =>
-                          handleToggleComplete(todo.id, todo.completed)
-                        }
-                        className="h-5 w-5"
-                      />
+                      {updatingId === todo.id ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-[#347a24]" />
+                      ) : (
+                        <Checkbox
+                          checked={todo.completed}
+                          onCheckedChange={() =>
+                            handleToggleComplete(todo.id, todo.completed)
+                          }
+                          className="h-6 w-6 border-2 border-[#347a24] data-[state=checked]:bg-[#347a24] data-[state=checked]:border-[#347a24]"
+                        />
+                      )}
 
                       {editingId === todo.id ? (
                         <>

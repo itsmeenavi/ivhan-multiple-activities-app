@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { User, Lock } from "lucide-react";
+import { useProfile } from "@/hooks/use-profiles";
 
 export function NavBar() {
   const { user } = useAuth();
+  const { profile } = useProfile(user?.id);
 
   if (!user) return null;
 
@@ -59,7 +61,7 @@ export function NavBar() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-[hsl(var(--color-muted-foreground))] hidden sm:inline">
-              {user.email}
+              {profile?.display_name || user.email}
             </span>
             <Link href="/profile">
               <Button variant="outline" size="sm" title="Profile Settings">
