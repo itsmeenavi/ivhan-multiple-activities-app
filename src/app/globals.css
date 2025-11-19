@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand Colors by Ivhan Salazar */
+  /* Primary: #347a24, Secondary: #66a777, Background: White */
+  --color-background: 0 0% 100%; /* Pure white */
+  --color-foreground: 142 52% 24%; /* #347a24 dark green */
+  --color-card: 0 0% 100%; /* White cards */
+  --color-card-foreground: 142 52% 24%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 142 52% 24%;
+  --color-primary: 142 52% 30%; /* #347a24 */
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 139 35% 55%; /* #66a777 */
+  --color-secondary-foreground: 0 0% 100%;
+  --color-muted: 139 25% 97%; /* Very light green tint */
+  --color-muted-foreground: 142 25% 40%;
+  --color-accent: 139 35% 55%;
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 0 0% 100%;
+  --color-border: 139 15% 90%; /* Subtle green border */
+  --color-input: 0 0% 96%; /* Light gray for inputs */
+  --color-ring: 142 52% 30%;
+  
+  /* Border Radius - Modern rounded corners */
+  --radius-lg: 0.75rem;
+  --radius-md: calc(0.75rem - 2px);
+  --radius-sm: calc(0.75rem - 4px);
+}
+
+* {
+  border-color: hsl(var(--color-border));
+}
+
+body {
+  background: white;
+  color: hsl(var(--color-foreground));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+}
