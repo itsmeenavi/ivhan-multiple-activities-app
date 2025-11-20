@@ -246,6 +246,35 @@ npm start
 npm run lint
 ```
 
+## 🧪 Testing
+
+This project includes unit and integration tests using **Jest** and **React Testing Library**.
+
+### Run all tests
+```bash
+npm test
+```
+
+### Test Coverage
+
+The test suite includes:
+
+1. **Authentication Tests**: Validates that authenticated user objects contain all required properties (id, email, user_metadata, role, aud, created_at)
+2. **Supabase Client Tests**: Ensures Auth methods (getSession, signInWithPassword, signUp) return expected user objects
+3. **Database Integration Tests**: Confirms database queries return proper user-specific data with correct associations
+4. **Error Handling Tests**: Verifies the app handles authentication failures gracefully
+5. **Navigation Tests**: Ensures user information renders correctly in navigation components
+
+All tests use mocked Supabase clients to prevent actual API calls during testing.
+
+### Test Files
+- `__tests__/auth-integration.test.tsx` - Main test file with 12 test cases
+- `__mocks__/supabase.ts` - Mock Supabase client
+- `jest.config.js` - Jest configuration
+- `jest.setup.js` - Test setup file
+
+✅ **All tests passing** (12/12)
+
 ## 📁 Project Structure
 
 ```
