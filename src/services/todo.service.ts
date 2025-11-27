@@ -1,10 +1,13 @@
 import { supabase } from "@/lib/supabase/client";
 
+export type TodoPriority = "LOW" | "MEDIUM" | "HIGH";
+
 export interface Todo {
   id: string;
   user_id: string;
   title: string;
   completed: boolean;
+  priority: TodoPriority;
   created_at: string;
   updated_at?: string;
 }
@@ -23,13 +26,18 @@ export const todoService = {
   },
 
   // Create a new todo
-  async createTodo(userId: string, title: string): Promise<Todo> {
+  async createTodo(
+    userId: string,
+    title: string,
+    priority: TodoPriority = "LOW"
+  ): Promise<Todo> {
     const { data, error } = await supabase
       .from("todos")
       .insert({
         user_id: userId,
         title,
         completed: false,
+        priority,
       })
       .select()
       .single();
@@ -41,7 +49,7 @@ export const todoService = {
   // Update a todo
   async updateTodo(
     todoId: string,
-    updates: { title?: string; completed?: boolean }
+    updates: { title?: string; completed?: boolean; priority?: TodoPriority }
   ): Promise<Todo> {
     const { data, error } = await supabase
       .from("todos")

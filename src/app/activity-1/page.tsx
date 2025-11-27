@@ -26,6 +26,7 @@ import {
 import { ListTodo, Plus, Trash2, Edit2, Check, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTodos } from "@/hooks/use-todos";
+import { TodoPriority } from "@/services/todo.service";
 
 export default function Activity1() {
   const { user, loading } = useAuth();
@@ -34,8 +35,22 @@ export default function Activity1() {
   const [newTodoTitle, setNewTodoTitle] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [editingPriority, setEditingPriority] = useState<TodoPriority>("LOW");
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [newTodoPriority, setNewTodoPriority] = useState<TodoPriority>("LOW");
+
+  const priorityOptions: { label: string; value: TodoPriority }[] = [
+    { label: "Low", value: "LOW" },
+    { label: "Medium", value: "MEDIUM" },
+    { label: "High", value: "HIGH" },
+  ];
+
+  const priorityStyles: Record<TodoPriority, string> = {
+    LOW: "bg-emerald-100 text-emerald-800",
+    MEDIUM: "bg-amber-100 text-amber-800",
+    HIGH: "bg-rose-100 text-rose-800",
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -49,15 +64,19 @@ export default function Activity1() {
       return;
     }
 
-    createTodo(newTodoTitle, {
-      onSuccess: () => {
-        setNewTodoTitle("");
-        toast.success("Todo created!");
-      },
-      onError: () => {
-        toast.error("Failed to create todo");
-      },
-    });
+    createTodo(
+      { title: newTodoTitle.trim(), priority: newTodoPriority },
+      {
+        onSuccess: () => {
+          setNewTodoTitle("");
+          setNewTodoPriority("LOW");
+          toast.success("Todo created!");
+        },
+        onError: () => {
+          toast.error("Failed to create todo");
+        },
+      }
+    );
   };
 
   const handleToggleComplete = (todoId: string, completed: boolean) => {
@@ -77,9 +96,14 @@ export default function Activity1() {
     );
   };
 
-  const handleStartEdit = (todoId: string, currentTitle: string) => {
+  const handleStartEdit = (
+    todoId: string,
+    currentTitle: string,
+    currentPriority: TodoPriority
+  ) => {
     setEditingId(todoId);
     setEditingTitle(currentTitle);
+    setEditingPriority(currentPriority);
   };
 
   const handleSaveEdit = (todoId: string) => {
@@ -89,11 +113,15 @@ export default function Activity1() {
     }
 
     updateTodo(
-      { todoId, updates: { title: editingTitle } },
+      {
+        todoId,
+        updates: { title: editingTitle.trim(), priority: editingPriority },
+      },
       {
         onSuccess: () => {
           setEditingId(null);
           setEditingTitle("");
+          setEditingPriority("LOW");
           toast.success("Todo updated!");
         },
         onError: () => {
@@ -106,6 +134,7 @@ export default function Activity1() {
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditingTitle("");
+    setEditingPriority("LOW");
   };
 
   const handleDelete = (todoId: string) => {
@@ -163,7 +192,7 @@ export default function Activity1() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Create Todo */}
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Input
                   placeholder="Enter a new todo..."
                   value={newTodoTitle}
@@ -175,10 +204,25 @@ export default function Activity1() {
                   }}
                   className="h-12"
                 />
-                <Button onClick={handleCreate} className="h-12" size="lg">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
+                <div className="flex gap-2">
+                  <select
+                    value={newTodoPriority}
+                    onChange={(e) =>
+                      setNewTodoPriority(e.target.value as TodoPriority)
+                    }
+                    className="h-12 rounded-md border px-3 text-sm font-medium uppercase text-[#347a24] outline-none focus:ring-2 focus:ring-[#66a777]"
+                  >
+                    {priorityOptions.map(({ label, value }) => (
+                      <option key={value} value={value}>
+                        {label} Priority
+                      </option>
+                    ))}
+                  </select>
+                  <Button onClick={handleCreate} className="h-12" size="lg">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add
+                  </Button>
+                </div>
               </div>
 
               {/* Todo List */}
@@ -207,7 +251,7 @@ export default function Activity1() {
                       )}
 
                       {editingId === todo.id ? (
-                        <>
+                        <div className="flex w-full flex-col gap-3 md:flex-row md:items-center">
                           <Input
                             value={editingTitle}
                             onChange={(e) => setEditingTitle(e.target.value)}
@@ -221,21 +265,36 @@ export default function Activity1() {
                             className="flex-1"
                             autoFocus
                           />
-                          <Button
-                            size="sm"
-                            onClick={() => handleSaveEdit(todo.id)}
-                            className="bg-green-600 hover:bg-green-700"
+                          <select
+                            value={editingPriority}
+                            onChange={(e) =>
+                              setEditingPriority(e.target.value as TodoPriority)
+                            }
+                            className="h-10 rounded-md border px-3 text-xs font-semibold uppercase text-[#347a24] outline-none focus:ring-2 focus:ring-[#66a777]"
                           >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleCancelEdit}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
+                            {priorityOptions.map(({ label, value }) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleSaveEdit(todo.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={handleCancelEdit}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <span
@@ -247,10 +306,17 @@ export default function Activity1() {
                           >
                             {todo.title}
                           </span>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase ${priorityStyles[todo.priority]}`}
+                          >
+                            {todo.priority}
+                          </span>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleStartEdit(todo.id, todo.title)}
+                            onClick={() =>
+                              handleStartEdit(todo.id, todo.title, todo.priority)
+                            }
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>

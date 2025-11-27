@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { todoService } from "@/services/todo.service";
+import { todoService, TodoPriority } from "@/services/todo.service";
 import { useAuth } from "@/contexts/auth-context";
 
 export function useTodos() {
@@ -13,8 +13,13 @@ export function useTodos() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (title: string) =>
-      todoService.createTodo(user?.id || "", title),
+    mutationFn: ({
+      title,
+      priority,
+    }: {
+      title: string;
+      priority: TodoPriority;
+    }) => todoService.createTodo(user?.id || "", title, priority),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["todos", user?.id] });
       await queryClient.refetchQueries({ queryKey: ["todos", user?.id] });
@@ -27,7 +32,11 @@ export function useTodos() {
       updates,
     }: {
       todoId: string;
-      updates: { title?: string; completed?: boolean };
+      updates: {
+        title?: string;
+        completed?: boolean;
+        priority?: TodoPriority;
+      };
     }) => todoService.updateTodo(todoId, updates),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["todos", user?.id] });
